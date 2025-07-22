@@ -85,27 +85,6 @@
   </div>
 
   <script>
-    const fatwas = [
-      {
-        id: 1,
-        question: "ما حكم الزكاة على المال المدخر؟",
-        answer: "تجب الزكاة إذا بلغ النصاب وحال عليه الحول.",
-        madhhab: "الشافعي"
-      },
-      {
-        id: 2,
-        question: "هل يجوز الإفطار للمريض في رمضان؟",
-        answer: "يجوز الإفطار للمريض ويقضي بعد الشفاء.",
-        madhhab: "المالكي"
-      },
-      {
-        id: 3,
-        question: "هل يجوز زواج المرأة بدون ولي؟",
-        answer: "لا يصح الزواج بدون ولي عند جمهور الفقهاء.",
-        madhhab: "الحنفي"
-      }
-    ];
-
     const chatContainer = document.getElementById('chat-container');
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
@@ -119,23 +98,34 @@
       chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
-    function findFatwa(question, madhhab) {
-      const q = question.trim().toLowerCase();
-      return fatwas.find(f => f.question.toLowerCase().includes(q) && f.madhhab === madhhab);
+    async function askGPT(question, madhhab) {
+      const response = await fetch("http://localhost:3000/api/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          question,
+          madhhab
+        })
+      });
+
+      const data = await response.json();
+      return data.answer || "حدث خطأ أثناء الاتصال بالخادم.";
     }
 
-    sendButton.onclick = () => {
+    sendButton.onclick = async () => {
       const text = userInput.value.trim();
       const madhhab = madhhabSelect.value;
       if (text) {
         appendMessage(text, 'user');
-        const result = findFatwa(text, madhhab);
-        if (result) {
-          appendMessage(result.answer + `\n(المذهب: ${result.madhhab})`, 'bot');
-        } else {
-          appendMessage('لم أجد فتوى مناسبة. يرجى التحقق من صيغة السؤال أو المذهب.', 'bot');
-        }
+        appendMessage("جارٍ التفكير...", 'bot');
         userInput.value = '';
+        const answer = await askGPT(text, madhhab);
+
+        chatContainer.lastChild.remove();
+
+        appendMessage(answer, 'bot');
       }
     }
   </script>
