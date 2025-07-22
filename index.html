@@ -1,51 +1,142 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>دار الإفتاء الرقمية</title>
   <style>
-    body { font-family: sans-serif; background: #f6f6f9; margin: 0; padding: 0; direction: rtl; }
-    .chat-container { max-width: 600px; margin: 50px auto; background: white; border-radius: 10px; box-shadow: 0 0 10px #ccc; padding: 20px; }
-    .msg { margin: 10px 0; padding: 10px; border-radius: 8px; }
-    .user { background: #d3eafd; text-align: right; }
-    .bot { background: #eee; text-align: left; }
-    .input-box { display: flex; margin-top: 20px; }
-    input { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    button { padding: 10px; border: none; background: #007bff; color: white; border-radius: 5px; margin-right: 10px; }
+    body {
+      background-color: #f7f7f7;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #009688;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    #chat-container {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .message {
+      margin: 0.5rem 0;
+      padding: 0.75rem;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+    .user {
+      background-color: #e0f7fa;
+      align-self: flex-end;
+    }
+    .bot {
+      background-color: #dcedc8;
+      align-self: flex-start;
+    }
+    #input-container {
+      display: flex;
+      padding: 1rem;
+      background-color: white;
+      border-top: 1px solid #ccc;
+    }
+    #user-input {
+      flex: 1;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    #send-button {
+      padding: 0.5rem 1rem;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    select {
+      margin-right: 1rem;
+    }
   </style>
 </head>
 <body>
-  <div class="chat-container">
-    <h2>دار الإفتاء الرقمية</h2>
-    <div id="chat">
-      <div class="msg bot">مرحبًا بك في دار الإفتاء الرقمية، كيف يمكنني مساعدتك؟</div>
-    </div>
-    <div class="input-box">
-      <input type="text" id="userInput" placeholder="اكتب سؤالك هنا..." />
-      <button onclick="sendMessage()">إرسال</button>
-    </div>
+  <header>دار الإفتاء الرقمية</header>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 1rem;">
+    <label for="madhhab-select">اختر المذهب:</label>
+    <select id="madhhab-select">
+      <option value="الشافعي">الشافعي</option>
+      <option value="المالكي">المالكي</option>
+      <option value="الحنفي">الحنفي</option>
+      <option value="الحنبلي">الحنبلي</option>
+    </select>
   </div>
+
+  <div id="chat-container"></div>
+
+  <div id="input-container">
+    <input type="text" id="user-input" placeholder="اكتب سؤالك هنا...">
+    <button id="send-button">إرسال</button>
+  </div>
+
   <script>
-    function sendMessage() {
-      const input = document.getElementById("userInput");
-      const chat = document.getElementById("chat");
-      const userText = input.value.trim();
-      if (!userText) return;
+    const fatwas = [
+      {
+        id: 1,
+        question: "ما حكم الزكاة على المال المدخر؟",
+        answer: "تجب الزكاة إذا بلغ النصاب وحال عليه الحول.",
+        madhhab: "الشافعي"
+      },
+      {
+        id: 2,
+        question: "هل يجوز الإفطار للمريض في رمضان؟",
+        answer: "يجوز الإفطار للمريض ويقضي بعد الشفاء.",
+        madhhab: "المالكي"
+      },
+      {
+        id: 3,
+        question: "هل يجوز زواج المرأة بدون ولي؟",
+        answer: "لا يصح الزواج بدون ولي عند جمهور الفقهاء.",
+        madhhab: "الحنفي"
+      }
+    ];
 
-      const userMsg = document.createElement("div");
-      userMsg.className = "msg user";
-      userMsg.innerText = userText;
-      chat.appendChild(userMsg);
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const madhhabSelect = document.getElementById('madhhab-select');
 
-      const botMsg = document.createElement("div");
-      botMsg.className = "msg bot";
-      botMsg.innerText = "جاري معالجة سؤالك... (نموذج تجريبي)";
-      chat.appendChild(botMsg);
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.innerText = text;
+      chatContainer.appendChild(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-      input.value = "";
-      chat.scrollTop = chat.scrollHeight;
+    function findFatwa(question, madhhab) {
+      const q = question.trim().toLowerCase();
+      return fatwas.find(f => f.question.toLowerCase().includes(q) && f.madhhab === madhhab);
+    }
+
+    sendButton.onclick = () => {
+      const text = userInput.value.trim();
+      const madhhab = madhhabSelect.value;
+      if (text) {
+        appendMessage(text, 'user');
+        const result = findFatwa(text, madhhab);
+        if (result) {
+          appendMessage(result.answer + `\n(المذهب: ${result.madhhab})`, 'bot');
+        } else {
+          appendMessage('لم أجد فتوى مناسبة. يرجى التحقق من صيغة السؤال أو المذهب.', 'bot');
+        }
+        userInput.value = '';
+      }
     }
   </script>
 </body>
